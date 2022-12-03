@@ -35,17 +35,17 @@ public class Poker {
         ArrayList<Card> boardCards = convertBoardToArrayList(board);
 
         checkForPairTwoPairTripsQuads(player,handCards,boardCards);
+        checkForFlush(player,handCards,boardCards);
         System.out.println(player.getHandRanking());
     }
 
     public static void checkForPairTwoPairTripsQuads(Player player, ArrayList<Card> handCards, ArrayList<Card> boardCards){
         int count = 0;
-        for(Card boardCard : boardCards){
-            for(Card handCard : handCards){
+        for(Card boardCard : boardCards)
+            for(Card handCard : handCards)
                 if(handCard.getValue().equals(boardCard.getValue()))
                     count++;
-            }
-        }
+
         if(count == 1)
             player.setHandRanking(9);
         if(count == 2)
@@ -54,6 +54,16 @@ public class Poker {
             player.setHandRanking(7);
         if(count > 3)
             player.setHandRanking(3);
+    }
+
+    public static void checkForFlush(Player player, ArrayList<Card> handCards, ArrayList<Card> boardCards){
+        int count = 0;
+        for(Card boardCard : boardCards)
+            for(Card handCard : handCards)
+                if(handCard.getSuit().equals(boardCard.getSuit()))
+                    count++;
+        if(count >= 5)
+            player.setHandRanking(5);
     }
     
     public static ArrayList<Card> convertHandToArrayList(Hand hand){
