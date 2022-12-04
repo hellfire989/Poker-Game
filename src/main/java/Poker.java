@@ -6,42 +6,50 @@ public class Poker {
     private static HashMap<String, Integer> suitTotals = new HashMap<>();
     private static List<Player> players = new LinkedList<>();
     private static List<Player> winners = new LinkedList<>();
+    private static ArrayList<Card> currentPlayersCards;
     private static Deck deck;
     private static Board board;
     public static void main(String args[]){
-        long startTime = System.nanoTime();
+        long totalRunTime = 0;
+        for(int i = 0; i < 10000; i++) {
+            players.clear();
+            winners.clear();
+            long startTime = System.nanoTime();
 
-        deck = new Deck();
-        Collections.shuffle(deck.getDeck());
+            deck = new Deck();
+            Collections.shuffle(deck.getDeck());
 
-        addPlayers(7);
-        createBoard();
-        calculateWinners();
-        printResults();
+            addPlayers(7);
+            createBoard();
+            calculateWinners();
+            printResults();
 
-        long endTime   = System.nanoTime();
-        long totalTime = endTime - startTime;
+            long endTime = System.nanoTime();
+            long totalTime = endTime - startTime;
 
-        System.out.println("");
-        System.out.println("Total run time of program: " + totalTime/1000 + " Microseconds");
+            System.out.println("");
+            System.out.println("Total run time of program: " + totalTime / 1000 + " Microseconds");
+            totalRunTime += totalTime;
+        }
+        System.out.println("Total run time of 1000 runs: " + totalRunTime / 1000 + " Microseconds");
     }
 
     public static void findHandRankForPlayer(Player currentPlayer){
-        ArrayList<Card> allCards = convertCardsToArrayList(currentPlayer.getHand(),board);
+        currentPlayersCards = convertCardsToArrayList(currentPlayer.getHand(),board);
 
         //Return booleans and add if checks
-        checkForPairTwoPairTripsQuadsFullHouse(currentPlayer, allCards);
-        checkForStraight(currentPlayer, allCards);
-        checkForFlush(currentPlayer, allCards);
-        checkForStraightFlush(currentPlayer, allCards);
-        checkForRoyalFlush(currentPlayer, allCards);
+        checkForPairTwoPairTripsQuadsFullHouse(currentPlayer);
+        checkForStraight(currentPlayer);
+        checkForFlush(currentPlayer);
+        checkForStraightFlush(currentPlayer);
+        checkForRoyalFlush(currentPlayer);
     }
 
-    public static void checkForPairTwoPairTripsQuadsFullHouse(Player player, ArrayList<Card> allCards){
+    public static void checkForPairTwoPairTripsQuadsFullHouse(Player player){
         cardTotals.clear();
         int lastElement;
         int secondToLastElement;
-        for(Card card : allCards)
+        for(Card card : currentPlayersCards)
             if (cardTotals.containsKey(card.getValue()))
                 cardTotals.put(card.getValue(), cardTotals.get(card.getValue()) + 1);
             else
@@ -65,11 +73,12 @@ public class Poker {
             player.setHandRanking(3);
     }
 
-    public static void checkForStraight(Player player, ArrayList<Card> allCards){
+    public static void checkForStraight(Player player){
         int count = 0;
+        boolean hasAce = false;
         List<Integer> cards = new LinkedList<>();
 
-        for(Card currentCard : allCards) {
+        for(Card currentCard : currentPlayersCards) {
             if ("J".equals(currentCard.getValue())) {
                 cards.add(11);
             } else if ("Q".equals(currentCard.getValue())) {
@@ -79,6 +88,7 @@ public class Poker {
             } else if ("A".equals(currentCard.getValue())) {
                 cards.add(1);
                 cards.add(14);
+                hasAce = true;
             } else {
                 cards.add(Integer.valueOf(currentCard.getValue()));
             }
@@ -94,13 +104,15 @@ public class Poker {
                 count++;
         }
 
-        if(count >= 5)
+        if(count > 5 && hasAce)
+            player.setHandRanking(6);
+        else if(count > 4 && !hasAce)
             player.setHandRanking(6);
     }
 
-    public static void checkForFlush(Player player, ArrayList<Card> allCards){
+    public static void checkForFlush(Player player){
         suitTotals.clear();
-        for(Card card : allCards)
+        for(Card card : currentPlayersCards)
             if (suitTotals.containsKey(card.getSuit()))
                 suitTotals.put(card.getSuit(), suitTotals.get(card.getSuit()) + 1);
             else
@@ -114,44 +126,50 @@ public class Poker {
             player.setHandRanking(5);
     }
 
-    public static void checkForStraightFlush(Player player, ArrayList<Card> allCards){
-        checkForStraight(player,allCards);
+    public static void checkForStraightFlush(Player player){
+        checkForStraight(player);
         if(player.getHandRanking() == 6) {
-            checkForFlush(player, allCards);
+            checkForFlush(player);
             if(player.getHandRanking() == 5)
                 player.setHandRanking(2);
         }
     }
 
-    public static void checkForRoyalFlush(Player player, ArrayList<Card> allCards){
-        int count = 0;
-        List<String> cards = new LinkedList<>();
-        for(Card card : allCards)
-            cards.add(card.getValue());
+    public static boolean checkForRoyalFlush(Player player){
+        checkForStraightFlush(player);
+        if(player.getHandRanking() == 2) {
+            int count = 0;
+            List<String> cards = new LinkedList<>();
+            for (Card card : currentPlayersCards)
+                cards.add(card.getValue());
 
-        Set<String> set = new HashSet<>(cards);
-        cards.clear();
-        cards.addAll(set);
-        Collections.sort(cards);
+            Set<String> set = new HashSet<>(cards);
+            cards.clear();
+            cards.addAll(set);
+            Collections.sort(cards);
 
-        for(String str : cards)
-            if(str.equals("A") || str.equals("K") || str.equals("Q") || str.equals("J") || str.equals("10"))
-                count++;
+            for (String str : cards)
+                if (str.equals("A") || str.equals("K") || str.equals("Q") || str.equals("J") || str.equals("10"))
+                    count++;
 
-        if(count == 5)
-            player.setHandRanking(1);
+            if (count == 5) {
+                player.setHandRanking(1);
+                return true;
+            }
+        }
+        return false;
     }
 
     public static ArrayList<Card> convertCardsToArrayList(Hand hand,Board board){
-        ArrayList<Card> allCards = new ArrayList<>();
-        allCards.add(board.getFlopCard1());
-        allCards.add(board.getFlopCard2());
-        allCards.add(board.getFlopCard3());
-        allCards.add(board.getTurn());
-        allCards.add(board.getRiver());
-        allCards.add(hand.getFirstCard());
-        allCards.add(hand.getSecondCard());
-        return allCards;
+        ArrayList<Card> currentPlayersCards = new ArrayList<>();
+        currentPlayersCards.add(board.getFlopCard1());
+        currentPlayersCards.add(board.getFlopCard2());
+        currentPlayersCards.add(board.getFlopCard3());
+        currentPlayersCards.add(board.getTurn());
+        currentPlayersCards.add(board.getRiver());
+        currentPlayersCards.add(hand.getFirstCard());
+        currentPlayersCards.add(hand.getSecondCard());
+        return currentPlayersCards;
     }
 
     public static void addPlayers(int totalPlayers){
@@ -170,9 +188,6 @@ public class Poker {
     public static void calculateWinners(){
         for(Player player : players)
             findHandRankForPlayer(player);
-
-        for(Player player : players)
-            System.out.println(player.getHandRankString());
 
         winners.add(players.get(0));
         for(int i = 1; i < players.size(); i++){
