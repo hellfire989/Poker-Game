@@ -88,13 +88,17 @@ public class Poker {
             }
         }
 
+        Set<Integer> set = new HashSet<>(cards); //Removes duplicates
+        cards.clear();
+        cards.addAll(set);
         Collections.sort(cards);
 
-        for(int i = 0; i < cards.size()-1; i++)
-            if(cards.get(i) == cards.get(i+1)-1)
+        for(int i = 0; i < cards.size()-1; i++) {
+            if (cards.get(i) == cards.get(i + 1) - 1)
                 count++;
+        }
 
-        if(count >= 5)
+        if(count >= 4)
             player.setHandRanking(6);
     }
 
@@ -124,11 +128,20 @@ public class Poker {
 
     public static void checkForRoyalFlush(Player player, ArrayList<Card> allCards){
         int count = 0;
-        if(player.getHandRanking() == 2)
-            for(Card card : allCards)
-                if(card.getValue().equals("A") || card.getValue().equals("K"))
-                    count++;
-        if(count >= 2)
+        List<String> cards = new LinkedList<>();
+        for(Card card : allCards)
+            cards.add(card.getValue());
+
+        Set<String> set = new HashSet<>(cards);
+        cards.clear();
+        cards.addAll(set);
+        Collections.sort(cards);
+
+        for(String str : cards){
+            if(str.equals("A") || str.equals("K") || str.equals("Q") || str.equals("J") || str.equals("10"))
+                count++;
+        }
+        if(count == 5)
             player.setHandRanking(1);
     }
 
