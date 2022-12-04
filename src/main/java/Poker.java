@@ -4,34 +4,24 @@ import java.util.*;
 public class Poker {
     private static HashMap<String, Integer> cardTotals = new HashMap<>();
     private static HashMap<String, Integer> suitTotals = new HashMap<>();
+    private static List<Player> players = new LinkedList<>();
+    private static List<Player> winners = new LinkedList<>();
+    private static Deck deck;
+    private static Board board;
     public static void main(String args[]){
-        Deck deck = new Deck();
-
-        System.out.println("Deck before shuffling: ");
-        System.out.println(deck.getDeck());
-
+        deck = new Deck();
         Collections.shuffle(deck.getDeck());
 
-        System.out.println("Deck after shuffling: ");
-        System.out.println(deck.getDeck());
-
-        Player player = new Player(0,10,new Hand(deck.removeTopCard(),deck.removeTopCard()));
-
-        System.out.println("Hand Dealt: ");
-        System.out.println(player.getHand());
-
-        Board board = new Board(deck.removeTopCard(),deck.removeTopCard(),deck.removeTopCard(),deck.removeTopCard(),deck.removeTopCard());
-
-        System.out.println("Board Dealt: ");
-        System.out.println(board);
-        System.out.println("");
-
-        findHandRankForPlayer(player, board);
+        addPlayers(5);
+        createBoard();
+        calculateWinners();
+        printResults();
     }
 
-    public static void findHandRankForPlayer(Player player, Board board){
+    public static void findHandRankForPlayer(Player player){
         ArrayList<Card> allCards = convertCardsToArrayList(player.getHand(),board);
 
+        //Return booleans and add if checks
         checkForPairTwoPairTripsQuadsFullHouse(player, allCards);
         checkForStraight(player, allCards);
         checkForFlush(player, allCards);
@@ -65,6 +55,7 @@ public class Poker {
         else if(lastElement > 3) // Quads
             player.setHandRanking(3);
     }
+
     public static void checkForStraight(Player player, ArrayList<Card> allCards){
         int count = 0;
         List<Integer> cards = new LinkedList<>();
@@ -133,10 +124,10 @@ public class Poker {
         cards.addAll(set);
         Collections.sort(cards);
 
-        for(String str : cards){
+        for(String str : cards)
             if(str.equals("A") || str.equals("K") || str.equals("Q") || str.equals("J") || str.equals("10"))
                 count++;
-        }
+
         if(count == 5)
             player.setHandRanking(1);
     }
@@ -151,5 +142,49 @@ public class Poker {
         allCards.add(hand.getFirstCard());
         allCards.add(hand.getSecondCard());
         return allCards;
+    }
+
+    public static void addPlayers(int totalPlayers){
+        Player newPlayer;
+
+        for(int i = 0; i < totalPlayers; i++) {
+            newPlayer = new Player(0, 10, new Hand(deck.removeTopCard(), deck.removeTopCard()));
+            players.add(newPlayer);
+        }
+    }
+    public static void createBoard(){
+        board = new Board(deck.removeTopCard(),deck.removeTopCard(),deck.removeTopCard(),deck.removeTopCard(),deck.removeTopCard());
+    }
+
+    public static void calculateWinners(){
+        for(Player player : players)
+            findHandRankForPlayer(player);
+
+        winners.add(players.get(0));
+        for(int i = 0; i < players.size(); i++){
+            if(players.get(i).getHandRanking() == winners.get(0).getHandRanking())
+                winners.add(players.get(i));
+            else if(players.get(i).getHandRanking() > winners.get(0).getHandRanking()){
+                winners.clear();
+                winners.add(players.get(i));
+            }
+        }
+
+    }
+
+    public static void printResults(){
+        for(Player player : players) {
+            System.out.println("Hand Dealt: ");
+            System.out.println(player.getHand());
+        }
+
+        System.out.println("");
+        System.out.println("Board Dealt: ");
+        System.out.println(board);
+        System.out.println("");
+
+        System.out.println("Winner(s) are: ");
+        for(Player player : winners)
+            System.out.println(player.getHandRankString());
     }
 }
