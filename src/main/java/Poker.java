@@ -1,7 +1,8 @@
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 
 public class Poker {
+    private static HashMap<String, Integer> cardTotals = new HashMap<>();
+    private static HashMap<String, Integer> suitTotals = new HashMap<>();
     public static void main(String args[]){
         Deck deck = new Deck();
 
@@ -28,57 +29,66 @@ public class Poker {
     }
 
     public static void calculateWinner(Player player, Board board){
-        boolean hasPair = false;
         System.out.println("Calculating Winner");
 
-        ArrayList<Card> handCards = convertHandToArrayList(player.getHand());
-        ArrayList<Card> boardCards = convertBoardToArrayList(board);
+        ArrayList<Card> allCards = convertCardsToArrayList(player.getHand(),board);
 
-        checkForPairTwoPairTripsQuads(player,handCards,boardCards);
-        checkForFlush(player,handCards,boardCards);
-        System.out.println(player.getHandRanking());
+        checkForPairTwoPairTripsQuadsFullHouse(player, allCards);
+        checkForFlush(player, allCards);
+        System.out.println(player.getHandRankString());
+        System.out.println();
     }
 
-    public static void checkForPairTwoPairTripsQuads(Player player, ArrayList<Card> handCards, ArrayList<Card> boardCards){
-        int count = 0;
-        for(Card boardCard : boardCards)
-            for(Card handCard : handCards)
-                if(handCard.getValue().equals(boardCard.getValue()))
-                    count++;
+    public static void checkForPairTwoPairTripsQuadsFullHouse(Player player, ArrayList<Card> allCards){
+        int lastElement;
+        int secondToLastElement;
+        for(Card card : allCards)
+            if (cardTotals.containsKey(card.getValue()))
+                cardTotals.put(card.getValue(), cardTotals.get(card.getValue()) + 1);
+            else
+                cardTotals.put(card.getValue(), 1);
 
-        if(count == 1)
-            player.setHandRanking(9);
-        if(count == 2)
+        Object[] cardTotalArray = cardTotals.values().toArray();
+        Arrays.sort(cardTotalArray);
+
+        lastElement = (int) cardTotalArray[cardTotalArray.length-1];
+        secondToLastElement = (int) cardTotalArray[cardTotalArray.length-2];
+
+        if(lastElement == 3 && secondToLastElement == 2) // Full House
+            player.setHandRanking(4);
+        else if(lastElement == 2 && secondToLastElement == 2) // Two Pair
             player.setHandRanking(8);
-        if(count == 3)
+        else if(lastElement == 2) // Pair
+            player.setHandRanking(9);
+        else if(lastElement == 3) // Trips
             player.setHandRanking(7);
-        if(count > 3)
+        else if(lastElement > 3) // Quads
             player.setHandRanking(3);
     }
 
-    public static void checkForFlush(Player player, ArrayList<Card> handCards, ArrayList<Card> boardCards){
-        int count = 0;
-        for(Card boardCard : boardCards)
-            for(Card handCard : handCards)
-                if(handCard.getSuit().equals(boardCard.getSuit()))
-                    count++;
-        if(count >= 5)
+    public static void checkForFlush(Player player, ArrayList<Card> allCards){
+        for(Card card : allCards)
+            if (suitTotals.containsKey(card.getSuit()))
+                suitTotals.put(card.getSuit(), suitTotals.get(card.getSuit()) + 1);
+            else
+                suitTotals.put(card.getSuit(), 1);
+
+        Object[] suitTotalArray = suitTotals.values().toArray();
+        Arrays.sort(suitTotalArray);
+
+        if((int) suitTotalArray[suitTotalArray.length-1] > 5)
             player.setHandRanking(5);
     }
-    
-    public static ArrayList<Card> convertHandToArrayList(Hand hand){
-        ArrayList<Card> handCards = new ArrayList<Card>();
-        handCards.add(hand.getFirstCard());
-        handCards.add(hand.getSecondCard());
-        return handCards;
-    }
-    public static ArrayList<Card> convertBoardToArrayList(Board board){
-        ArrayList<Card> boardCards = new ArrayList<Card>();
-        boardCards.add(board.getFlopCard1());
-        boardCards.add(board.getFlopCard2());
-        boardCards.add(board.getFlopCard3());
-        boardCards.add(board.getTurn());
-        boardCards.add(board.getRiver());
-        return boardCards;
+
+    public static ArrayList<Card> convertCardsToArrayList(Hand hand,Board board){
+        ArrayList<Card> allCards = new ArrayList<>();
+        allCards.add(board.getFlopCard1());
+        allCards.add(board.getFlopCard2());
+        allCards.add(board.getFlopCard3());
+        allCards.add(board.getTurn());
+        allCards.add(board.getRiver());
+        allCards.add(hand.getFirstCard());
+        allCards.add(hand.getSecondCard());
+        return allCards;
     }
 }
