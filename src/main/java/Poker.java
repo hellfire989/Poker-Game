@@ -26,12 +26,10 @@ public class Poker {
         System.out.println(board);
         System.out.println("");
 
-        calculateWinner(player, board);
+        findHandRankForPlayer(player, board);
     }
 
-    public static void calculateWinner(Player player, Board board){
-        System.out.println("Calculating Winner");
-
+    public static void findHandRankForPlayer(Player player, Board board){
         ArrayList<Card> allCards = convertCardsToArrayList(player.getHand(),board);
 
         checkForPairTwoPairTripsQuadsFullHouse(player, allCards);
@@ -39,8 +37,6 @@ public class Poker {
         checkForFlush(player, allCards);
         checkForStraightFlush(player, allCards);
         checkForRoyalFlush(player, allCards);
-        System.out.println(player.getHandRankString());
-        System.out.println();
     }
 
     public static void checkForPairTwoPairTripsQuadsFullHouse(Player player, ArrayList<Card> allCards){
