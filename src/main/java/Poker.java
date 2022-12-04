@@ -10,7 +10,7 @@ public class Poker {
         System.out.println("Deck before shuffling: ");
         System.out.println(deck.getDeck());
 
-        //Collections.shuffle(deck.getDeck());
+        Collections.shuffle(deck.getDeck());
 
         System.out.println("Deck after shuffling: ");
         System.out.println(deck.getDeck());
