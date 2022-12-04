@@ -1,3 +1,4 @@
+import java.sql.SQLOutput;
 import java.util.*;
 
 public class Poker {
@@ -35,6 +36,7 @@ public class Poker {
 
         checkForPairTwoPairTripsQuadsFullHouse(player, allCards);
         checkForFlush(player, allCards);
+        checkForStraight(player, allCards);
         System.out.println(player.getHandRankString());
         System.out.println();
     }
@@ -78,6 +80,35 @@ public class Poker {
 
         if((int) suitTotalArray[suitTotalArray.length-1] > 5)
             player.setHandRanking(5);
+    }
+
+    public static void checkForStraight(Player player, ArrayList<Card> allCards){
+        int count = 0;
+        List<Integer> cards = new LinkedList<>();
+
+        for(Card currentCard : allCards) {
+            if ("J".equals(currentCard.getValue())) {
+                cards.add(11);
+            } else if ("Q".equals(currentCard.getValue())) {
+                cards.add(12);
+            } else if ("K".equals(currentCard.getValue())) {
+                cards.add(13);
+            } else if ("A".equals(currentCard.getValue())) {
+                cards.add(1);
+                cards.add(14);
+            } else {
+                cards.add(Integer.valueOf(currentCard.getValue()));
+            }
+        }
+
+        Collections.sort(cards);
+
+        for(int i = 0; i < cards.size()-1; i++)
+            if(cards.get(i) == cards.get(i+1)-1)
+                count++;
+
+        if(count > 5)
+            player.setHandRanking(6);
     }
 
     public static ArrayList<Card> convertCardsToArrayList(Hand hand,Board board){
