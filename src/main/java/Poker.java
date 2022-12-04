@@ -10,7 +10,7 @@ public class Poker {
         System.out.println("Deck before shuffling: ");
         System.out.println(deck.getDeck());
 
-        Collections.shuffle(deck.getDeck());
+        //Collections.shuffle(deck.getDeck());
 
         System.out.println("Deck after shuffling: ");
         System.out.println(deck.getDeck());
@@ -37,6 +37,7 @@ public class Poker {
         checkForPairTwoPairTripsQuadsFullHouse(player, allCards);
         checkForFlush(player, allCards);
         checkForStraight(player, allCards);
+        checkForStraightFlush(player, allCards);
         System.out.println(player.getHandRankString());
         System.out.println();
     }
@@ -67,21 +68,6 @@ public class Poker {
         else if(lastElement > 3) // Quads
             player.setHandRanking(3);
     }
-
-    public static void checkForFlush(Player player, ArrayList<Card> allCards){
-        for(Card card : allCards)
-            if (suitTotals.containsKey(card.getSuit()))
-                suitTotals.put(card.getSuit(), suitTotals.get(card.getSuit()) + 1);
-            else
-                suitTotals.put(card.getSuit(), 1);
-
-        Object[] suitTotalArray = suitTotals.values().toArray();
-        Arrays.sort(suitTotalArray);
-
-        if((int) suitTotalArray[suitTotalArray.length-1] > 5)
-            player.setHandRanking(5);
-    }
-
     public static void checkForStraight(Player player, ArrayList<Card> allCards){
         int count = 0;
         List<Integer> cards = new LinkedList<>();
@@ -109,6 +95,29 @@ public class Poker {
 
         if(count > 5)
             player.setHandRanking(6);
+    }
+
+    public static void checkForFlush(Player player, ArrayList<Card> allCards){
+        for(Card card : allCards)
+            if (suitTotals.containsKey(card.getSuit()))
+                suitTotals.put(card.getSuit(), suitTotals.get(card.getSuit()) + 1);
+            else
+                suitTotals.put(card.getSuit(), 1);
+
+        Object[] suitTotalArray = suitTotals.values().toArray();
+        Arrays.sort(suitTotalArray);
+
+        if((int) suitTotalArray[suitTotalArray.length-1] > 5)
+            player.setHandRanking(5);
+    }
+
+    public static void checkForStraightFlush(Player player, ArrayList<Card> allCards){
+        checkForStraight(player,allCards);
+        if(player.getHandRanking() == 6) {
+            checkForFlush(player, allCards);
+            if(player.getHandRanking() == 5)
+                player.setHandRanking(2);
+        }
     }
 
     public static ArrayList<Card> convertCardsToArrayList(Hand hand,Board board){
