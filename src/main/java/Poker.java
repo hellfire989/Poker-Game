@@ -9,27 +9,36 @@ public class Poker {
     private static Deck deck;
     private static Board board;
     public static void main(String args[]){
+        long startTime = System.nanoTime();
+
         deck = new Deck();
         Collections.shuffle(deck.getDeck());
 
-        addPlayers(5);
+        addPlayers(7);
         createBoard();
         calculateWinners();
         printResults();
+
+        long endTime   = System.nanoTime();
+        long totalTime = endTime - startTime;
+
+        System.out.println("");
+        System.out.println("Total run time of program: " + totalTime/1000 + " Microseconds");
     }
 
-    public static void findHandRankForPlayer(Player player){
-        ArrayList<Card> allCards = convertCardsToArrayList(player.getHand(),board);
+    public static void findHandRankForPlayer(Player currentPlayer){
+        ArrayList<Card> allCards = convertCardsToArrayList(currentPlayer.getHand(),board);
 
         //Return booleans and add if checks
-        checkForPairTwoPairTripsQuadsFullHouse(player, allCards);
-        checkForStraight(player, allCards);
-        checkForFlush(player, allCards);
-        checkForStraightFlush(player, allCards);
-        checkForRoyalFlush(player, allCards);
+        checkForPairTwoPairTripsQuadsFullHouse(currentPlayer, allCards);
+        checkForStraight(currentPlayer, allCards);
+        checkForFlush(currentPlayer, allCards);
+        checkForStraightFlush(currentPlayer, allCards);
+        checkForRoyalFlush(currentPlayer, allCards);
     }
 
     public static void checkForPairTwoPairTripsQuadsFullHouse(Player player, ArrayList<Card> allCards){
+        cardTotals.clear();
         int lastElement;
         int secondToLastElement;
         for(Card card : allCards)
@@ -85,11 +94,12 @@ public class Poker {
                 count++;
         }
 
-        if(count >= 4)
+        if(count >= 5)
             player.setHandRanking(6);
     }
 
     public static void checkForFlush(Player player, ArrayList<Card> allCards){
+        suitTotals.clear();
         for(Card card : allCards)
             if (suitTotals.containsKey(card.getSuit()))
                 suitTotals.put(card.getSuit(), suitTotals.get(card.getSuit()) + 1);
@@ -149,6 +159,7 @@ public class Poker {
 
         for(int i = 0; i < totalPlayers; i++) {
             newPlayer = new Player(0, 10, new Hand(deck.removeTopCard(), deck.removeTopCard()));
+            newPlayer.setPlayerNo(i);
             players.add(newPlayer);
         }
     }
@@ -160,12 +171,16 @@ public class Poker {
         for(Player player : players)
             findHandRankForPlayer(player);
 
+        for(Player player : players)
+            System.out.println(player.getHandRankString());
+
         winners.add(players.get(0));
-        for(int i = 0; i < players.size(); i++){
-            if(players.get(i).getHandRanking() == winners.get(0).getHandRanking())
-                winners.add(players.get(i));
-            else if(players.get(i).getHandRanking() > winners.get(0).getHandRanking()){
+        for(int i = 1; i < players.size(); i++){
+            if(players.get(i).getHandRanking() < winners.get(0).getHandRanking()){
                 winners.clear();
+                winners.add(players.get(i));
+            }
+            else if(players.get(i).getHandRanking() == winners.get(0).getHandRanking()){
                 winners.add(players.get(i));
             }
         }
@@ -174,7 +189,7 @@ public class Poker {
 
     public static void printResults(){
         for(Player player : players) {
-            System.out.println("Hand Dealt: ");
+            System.out.println("Player: " + player.getPlayerNo() + " Hand Dealt: ");
             System.out.println(player.getHand());
         }
 
@@ -185,6 +200,6 @@ public class Poker {
 
         System.out.println("Winner(s) are: ");
         for(Player player : winners)
-            System.out.println(player.getHandRankString());
+            System.out.println("Player: " + player.getPlayerNo() + " With Hand: " + player.getHand() + " - " + player.getHandRankString());
     }
 }
