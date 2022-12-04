@@ -1,5 +1,9 @@
-import java.sql.SQLOutput;
 import java.util.*;
+/*
+    Current Bugs:
+        - Program cannot not determine which hand is better if multiple players have same hand rank.
+        - Program cannot calculate straight flush / royal flush correctly.
+ */
 
 public class Poker {
     private static HashMap<String, Integer> cardTotals = new HashMap<>();
