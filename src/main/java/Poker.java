@@ -35,9 +35,10 @@ public class Poker {
         ArrayList<Card> allCards = convertCardsToArrayList(player.getHand(),board);
 
         checkForPairTwoPairTripsQuadsFullHouse(player, allCards);
-        checkForFlush(player, allCards);
         checkForStraight(player, allCards);
+        checkForFlush(player, allCards);
         checkForStraightFlush(player, allCards);
+        checkForRoyalFlush(player, allCards);
         System.out.println(player.getHandRankString());
         System.out.println();
     }
@@ -93,7 +94,7 @@ public class Poker {
             if(cards.get(i) == cards.get(i+1)-1)
                 count++;
 
-        if(count > 5)
+        if(count >= 5)
             player.setHandRanking(6);
     }
 
@@ -106,8 +107,9 @@ public class Poker {
 
         Object[] suitTotalArray = suitTotals.values().toArray();
         Arrays.sort(suitTotalArray);
+        int maxSuits = (int) suitTotalArray[suitTotalArray.length-1];
 
-        if((int) suitTotalArray[suitTotalArray.length-1] > 5)
+        if(maxSuits >= 5)
             player.setHandRanking(5);
     }
 
@@ -118,6 +120,16 @@ public class Poker {
             if(player.getHandRanking() == 5)
                 player.setHandRanking(2);
         }
+    }
+
+    public static void checkForRoyalFlush(Player player, ArrayList<Card> allCards){
+        int count = 0;
+        if(player.getHandRanking() == 2)
+            for(Card card : allCards)
+                if(card.getValue().equals("A") || card.getValue().equals("K"))
+                    count++;
+        if(count >= 2)
+            player.setHandRanking(1);
     }
 
     public static ArrayList<Card> convertCardsToArrayList(Hand hand,Board board){
